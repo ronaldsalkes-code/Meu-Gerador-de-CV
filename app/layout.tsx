@@ -1,45 +1,59 @@
-import type { Metadata } from 'next'
-import { Geist, Geist_Mono } from 'next/font/google'
+import { ClerkProvider, SignInButton, SignedIn, SignedOut } from '@clerk/nextjs'
 import { Analytics } from '@vercel/analytics/next'
 import './globals.css'
 
-const _geist = Geist({ subsets: ["latin"] });
-const _geistMono = Geist_Mono({ subsets: ["latin"] });
-
-export const metadata: Metadata = {
-  title: 'v0 App',
-  description: 'Created with v0',
-  generator: 'v0.app',
-  icons: {
-    icon: [
-      {
-        url: '/icon-light-32x32.png',
-        media: '(prefers-color-scheme: light)',
-      },
-      {
-        url: '/icon-dark-32x32.png',
-        media: '(prefers-color-scheme: dark)',
-      },
-      {
-        url: '/icon.svg',
-        type: 'image/svg+xml',
-      },
-    ],
-    apple: '/apple-icon.png',
-  },
+export const metadata = {
+  title: 'Meu Gerador de Currículos',
+  description: 'Crie seu currículo profissional com IA',
 }
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode
-}>) {
+}) {
   return (
-    <html lang="en">
-      <body className={`font-sans antialiased`}>
-        {children}
-        <Analytics />
-      </body>
-    </html>
+    <ClerkProvider>
+      <html lang="pt-br">
+        <body className="antialiased">
+          <SignedOut>
+            <div style={{ 
+              display: 'flex', 
+              justifyContent: 'center', 
+              alignItems: 'center', 
+              height: '100vh', 
+              flexDirection: 'column', 
+              gap: '20px', 
+              fontFamily: 'sans-serif',
+              textAlign: 'center',
+              backgroundColor: '#f9fafb'
+            }}>
+              <h1 style={{ color: '#111827', fontSize: '2rem' }}>🚀 Gerador de Currículos</h1>
+              <p style={{ color: '#4b5563' }}>Faça login para criar e salvar seus currículos com IA.</p>
+              <SignInButton mode="modal">
+                <button style={{ 
+                  padding: '12px 24px', 
+                  backgroundColor: '#0070f3', 
+                  color: '#fff', 
+                  borderRadius: '8px', 
+                  cursor: 'pointer', 
+                  border: 'none', 
+                  fontSize: '16px',
+                  fontWeight: 'bold',
+                  boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+                }}>
+                  Entrar com Google / Email
+                </button>
+              </SignInButton>
+            </div>
+          </SignedOut>
+
+          <SignedIn>
+            {children}
+            <Analytics />
+          </SignedIn>
+        </body>
+      </html>
+    </ClerkProvider>
   )
 }

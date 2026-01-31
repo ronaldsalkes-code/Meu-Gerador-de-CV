@@ -3,26 +3,62 @@
 import { useState } from 'react'
 
 export default function GerarCV() {
-  const [nome, setNome] = useState('')
+  const [etapa, setEtapa] = useState(1)
+
+  const [dados, setDados] = useState({
+    nome: '',
+    cargo: '',
+    email: '',
+    telefone: '',
+  })
 
   return (
-    <div style={{ padding: 40, maxWidth: 600 }}>
+    <div style={{ padding: 40, maxWidth: 700 }}>
       <h1>Gerador de Currículo</h1>
+      <p>Etapa {etapa} de 10</p>
 
-      <label>Seu nome</label>
-      <input
-        value={nome}
-        onChange={(e) => setNome(e.target.value)}
-        placeholder="Ex: João Silva"
-        style={{
-          display: 'block',
-          width: '100%',
-          padding: 10,
-          marginTop: 8
-        }}
-      />
+      {etapa === 1 && (
+        <>
+          <h2>Quem é você?</h2>
 
-      {nome && <p>Olá, {nome}. Seu currículo vai começar aqui.</p>}
+          <input
+            placeholder="Nome completo"
+            value={dados.nome}
+            onChange={(e) => setDados({ ...dados, nome: e.target.value })}
+            style={{ display: 'block', width: '100%', padding: 10, marginBottom: 10 }}
+          />
+
+          <input
+            placeholder="Cargo desejado"
+            value={dados.cargo}
+            onChange={(e) => setDados({ ...dados, cargo: e.target.value })}
+            style={{ display: 'block', width: '100%', padding: 10, marginBottom: 10 }}
+          />
+
+          <input
+            placeholder="Email"
+            value={dados.email}
+            onChange={(e) => setDados({ ...dados, email: e.target.value })}
+            style={{ display: 'block', width: '100%', padding: 10, marginBottom: 10 }}
+          />
+
+          <input
+            placeholder="Telefone"
+            value={dados.telefone}
+            onChange={(e) => setDados({ ...dados, telefone: e.target.value })}
+            style={{ display: 'block', width: '100%', padding: 10 }}
+          />
+        </>
+      )}
+
+      <div style={{ marginTop: 30 }}>
+        <button
+          onClick={() => setEtapa(etapa + 1)}
+          style={{ padding: 12, fontWeight: 'bold' }}
+        >
+          Próxima etapa
+        </button>
+      </div>
     </div>
   )
 }

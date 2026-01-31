@@ -4,26 +4,43 @@ import { useState, useEffect } from 'react'
 import { SignedIn, useUser, UserButton } from "@clerk/nextjs";
 import { 
   ArrowLeft, CheckCircle2, Sparkles, Plus, ChevronRight, User, 
-  Linkedin, Mail, Phone, Wand2, Rocket, Timer, Briefcase, Zap, GraduationCap
+  Linkedin, Mail, Phone, Wand2, Rocket, Timer, Briefcase, Zap, GraduationCap, FileText
 } from 'lucide-react'
 
 export default function GeradorCVFiel() {
   const { user, isLoaded } = useUser();
-  const [fluxo, setFluxo] = useState(12); 
+  const [fluxo, setFluxo] = useState(12);
+  const [montado, setMontado] = useState(false); // TRAVA DE SEGURANÇA
+  
   const [dados, setDados] = useState({
     nome: '', cargo: '', tel: '', email: '', cidade: '', linkedin: '',
     resumo: '', exp: '', estudos: '', skills: '', vagaTexto: '', cnh: 'Não'
   });
 
+  // Só executa no navegador (evita erro de client-side exception)
+  useEffect(() => {
+    setMontado(true);
+    const salvo = localStorage.getItem('cv_fiel_v1');
+    if (salvo) {
+      try {
+        setDados(JSON.parse(salvo));
+      } catch (e) {
+        console.error("Erro ao ler dados salvos");
+      }
+    }
+  }, []);
+
   const update = (obj: any) => {
     const novo = { ...dados, ...obj };
     setDados(novo);
-    localStorage.setItem('cv_fiel_v1', JSON.stringify(novo));
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('cv_fiel_v1', JSON.stringify(novo));
+    }
   };
 
-  if (!isLoaded) return null;
+  // Se o Clerk não carregou ou o componente não montou, não renderiza nada ainda
+  if (!isLoaded || !montado) return null;
 
-  // Renderizador de Etapas para garantir que NADA trave
   const renderEtapa = () => {
     switch (fluxo) {
       case 0:
@@ -50,7 +67,7 @@ export default function GeradorCVFiel() {
             </div>
           </div>
         )
-      case 6: // A TELA DE ANÁLISE DE IA (IGUAL À IMAGEM)
+      case 6:
         return (
           <div className="space-y-8 animate-in zoom-in-95">
             <div className="bg-[#EEF2FF] border border-blue-100 rounded-[2.5rem] p-10 relative overflow-hidden">
@@ -76,7 +93,7 @@ export default function GeradorCVFiel() {
             </div>
           </div>
         )
-      case 11: // TELA DE PAGAMENTO (IGUAL À IMAGEM)
+      case 11:
         return (
           <div className="text-center space-y-8 animate-in zoom-in duration-500 py-10">
             <div className="bg-white p-12 rounded-[3.5rem] border shadow-2xl relative">
@@ -90,7 +107,7 @@ export default function GeradorCVFiel() {
             </div>
           </div>
         )
-      default: // TODAS AS OUTRAS ETAPAS (1, 2, 3, 4, 5, 7, 8, 9, 10)
+      default:
         return (
           <div className="space-y-8 animate-in slide-in-from-right-8">
             <h2 className="text-3xl font-black italic uppercase tracking-tighter">Preencha os dados</h2>
@@ -107,12 +124,11 @@ export default function GeradorCVFiel() {
                   <input className="w-full p-6 bg-white border-2 border-slate-100 rounded-2xl outline-none focus:border-blue-600 font-black shadow-sm" placeholder="E-MAIL" value={dados.email} onChange={e => update({email: e.target.value})}/>
                 </>
               )}
-              {/* Adicionei este bloco genérico para as etapas 3, 4, 5, 7, 8, 9, 10 para NÃO TRAVAR */}
               {(fluxo >= 3 && fluxo <= 10 && fluxo !== 6) && (
                 <textarea 
                   className="w-full h-64 p-8 bg-white border-2 border-slate-100 rounded-[2.5rem] outline-none focus:border-blue-600 font-bold text-slate-600 shadow-sm"
                   placeholder="Descreva aqui os detalhes desta etapa..."
-                  value={dados.resumo} // Exemplo genérico para não travar
+                  value={dados.resumo} 
                   onChange={e => update({resumo: e.target.value})}
                 />
               )}
@@ -125,7 +141,6 @@ export default function GeradorCVFiel() {
   return (
     <div className="min-h-screen bg-[#F8FAFC] flex flex-col font-sans selection:bg-blue-100">
       
-      {/* HEADER PROGRESSO (IGUAL IMAGEM) */}
       {fluxo < 11 && (
         <div className="w-full bg-white border-b flex items-center justify-between px-8 py-5 sticky top-0 z-50">
           <button onClick={() => setFluxo(fluxo === 0 ? 12 : fluxo - 1)} className="flex items-center gap-2 text-slate-400 font-black text-[10px] uppercase tracking-widest">
@@ -139,13 +154,15 @@ export default function GeradorCVFiel() {
       )}
 
       <div className="flex flex-1 overflow-hidden">
-        
-        {/* SIDEBAR (IGUAL IMAGEM) */}
         <aside className="hidden lg:flex w-72 bg-white border-r p-8 flex-col items-center shrink-0">
-          <div className="w-24 h-24 rounded-full bg-slate-100 mb-4 border-4 border-white shadow-xl overflow-hidden">
-            <img src={user?.imageUrl} className="w-full h-full object-cover" alt="User" />
+          <div className="w-24 h-24 rounded-full bg-slate-100 mb-4 border-4 border-white shadow-xl overflow-hidden flex items-center justify-center">
+            {user?.imageUrl ? (
+              <img src={user.imageUrl} className="w-full h-full object-cover" alt="User" />
+            ) : (
+              <User size={40} className="text-slate-300" />
+            )}
           </div>
-          <h3 className="font-black text-sm text-slate-800 uppercase tracking-tighter">{user?.firstName}</h3>
+          <h3 className="font-black text-sm text-slate-800 uppercase tracking-tighter">{user?.firstName || 'Usuário'}</h3>
           <p className="text-[10px] text-blue-600 font-black uppercase tracking-[0.2em] mt-1 italic">Conta Ativa</p>
           
           <nav className="w-full mt-10 space-y-2">
@@ -156,11 +173,8 @@ export default function GeradorCVFiel() {
           </nav>
         </aside>
 
-        {/* ÁREA CENTRAL */}
         <main className="flex-1 p-6 md:p-12 overflow-y-auto bg-[#F8FAFC]">
           <div className="max-w-2xl mx-auto pb-32">
-            
-            {/* DASHBOARD (FLUXO 12) */}
             {fluxo === 12 && (
               <div className="space-y-8">
                 <div className="flex justify-between items-center">
@@ -177,15 +191,11 @@ export default function GeradorCVFiel() {
                 </div>
               </div>
             )}
-
-            {/* RENDERIZADOR DE ETAPAS */}
             {fluxo !== 12 && renderEtapa()}
-
           </div>
         </main>
       </div>
 
-      {/* FOOTER FIXO (IGUAL IMAGEM) */}
       {fluxo < 11 && (
         <footer className="w-full bg-white border-t p-6 flex justify-center sticky bottom-0 z-50">
           <button 

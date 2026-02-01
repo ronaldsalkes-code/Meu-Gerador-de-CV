@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useUser, UserButton } from "@clerk/nextjs";
 import { 
   ArrowLeft, Sparkles, Briefcase, Send, FileText, Lock, Plus, 
-  ChevronRight, User, Download, Trash2
+  ChevronRight, User, Download, Trash2, CheckCircle2
 } from 'lucide-react'
 
 export default function GeradorCV() {
@@ -29,19 +29,8 @@ export default function GeradorCV() {
     localStorage.setItem('cv_premium_data', JSON.stringify(atualizado));
   };
 
-  const resetarTudo = () => {
-    localStorage.removeItem('cv_premium_data');
-    setDados({
-      nome: '', cargo: '', tel: '', email: '', cidade: '', linkedin: '',
-      resumo: '', exp: '', estudos: '', skills: '',
-      cursos: '', idiomas: '', cnh: 'Não Possuo', disponibilidade: '', vagaTexto: ''
-    });
-    setFluxo(12);
-    alert("Memória limpa!");
-  };
-
   const otimizarComIA = async () => {
-    if (!dados.vagaTexto) return alert("Preencha a vaga no passo 3!");
+    if (!dados.vagaTexto) return alert("Por favor, cole a descrição da vaga no Passo 3 para a IA saber o que fazer!");
     setGerandoIA(true);
     try {
       const response = await fetch('/api/gerar-cv', {
@@ -50,147 +39,124 @@ export default function GeradorCV() {
         body: JSON.stringify({ dados }),
       });
       const result = await response.json();
-      atualizarDados({ resumo: result.resumo, exp: result.exp, skills: result.skills });
-      alert("IA finalizou a otimização!");
+      
+      // Aqui a IA complementa em vez de apagar
+      atualizarDados({ 
+        resumo: result.resumo || dados.resumo, 
+        exp: result.exp || dados.exp, 
+        skills: result.skills || dados.skills 
+      });
+      alert("IA finalizou a otimização com sucesso!");
     } catch (e) {
-      alert("Erro na IA. Verifique se o arquivo route.ts existe.");
+      alert("Erro na conexão com a IA.");
     } finally {
       setGerandoIA(false);
-    }
-  };
-
-  const irParaProximaEtapa = () => {
-    if (fluxo === 10) {
-      setFluxo(11);
-    } else {
-      setFluxo(prev => prev + 1);
     }
   };
 
   if (!isLoaded) return null;
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] flex flex-col font-sans text-slate-900">
+    <div className="min-h-screen bg-[#F1F5F9] flex flex-col font-sans text-slate-900 selection:bg-blue-100">
       
-      {/* STATUS BAR */}
-      <div className="bg-red-600 text-white p-2 text-center text-[10px] flex justify-between items-center px-8 font-mono">
-           <span>MODO DEBUG: ETAPA {fluxo}</span>
-           <button onClick={resetarTudo} className="bg-white text-red-600 px-2 py-0.5 rounded font-bold uppercase text-[9px]">
-             Resetar Sistema
-           </button>
-      </div>
-
-      {/* HEADER */}
-      {fluxo <= 11 && (
-        <div className="w-full bg-white border-b flex items-center justify-between px-6 py-4 sticky top-0 z-50">
-          <button onClick={() => setFluxo(12)} className="flex items-center gap-2 text-slate-400 hover:text-blue-600">
-            <ArrowLeft size={18}/> <span className="text-[10px] font-black uppercase">Dashboard</span>
-          </button>
-          <div className="font-black text-blue-600 uppercase text-xs tracking-widest">
-            {fluxo === 11 ? "MODO PREVIEW" : `Passo ${fluxo}/10`}
+      {/* HEADER ULTRA MODERNO */}
+      <nav className="w-full bg-white/80 backdrop-blur-md border-b border-slate-200 px-6 py-4 sticky top-0 z-50 flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-200">
+            <Briefcase size={20} />
+          </div>
+          <div>
+            <h1 className="text-sm font-black uppercase tracking-tighter text-slate-800">CV Master AI</h1>
+            <p className="text-[10px] text-blue-600 font-bold uppercase tracking-widest">Premium Edition</p>
           </div>
         </div>
-      )}
+        <UserButton afterSignOutUrl="/"/>
+      </nav>
 
-      <div className="flex flex-1 flex-col md:flex-row">
-        {/* SIDEBAR */}
-        <aside className="w-full md:w-72 bg-white border-r p-8 hidden md:flex flex-col items-center">
-           <UserButton />
-           <p className="mt-4 text-[10px] font-black uppercase text-slate-400">Perfil Ativo</p>
-        </aside>
-
-        {/* ÁREA PRINCIPAL */}
-        <main className="flex-1 p-6 md:p-12 overflow-y-auto pb-32">
-          <div className="max-w-3xl mx-auto">
-
-            {/* FLUXO 12: DASHBOARD */}
-            {fluxo === 12 && (
-              <div className="space-y-8 animate-in fade-in">
-                <h1 className="text-4xl font-black uppercase italic">Meus Currículos</h1>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <button onClick={() => setFluxo(0)} className="bg-blue-600 text-white p-8 rounded-[2rem] text-left hover:scale-105 transition-all shadow-xl">
-                    <Plus size={32} className="mb-4"/>
-                    <div className="font-black uppercase text-xl">Novo Currículo</div>
-                    <div className="text-[10px] opacity-70 uppercase mt-1">Clique para começar</div>
-                  </button>
-                  <button onClick={() => setFluxo(11)} className="bg-white border-2 border-slate-100 p-8 rounded-[2rem] text-left hover:border-blue-400 transition-all">
-                    <FileText size={32} className="mb-4 text-slate-300"/>
-                    <div className="font-black uppercase text-xl text-slate-800">Ver Rascunho</div>
-                    <div className="text-[10px] text-slate-400 uppercase mt-1">Continuar edição</div>
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* FORMULÁRIO (0 a 10) */}
-            {fluxo === 0 && <div className="animate-in zoom-in"><h2 className="text-3xl font-black uppercase mb-6">Pronto?</h2><button onClick={()=>setFluxo(1)} className="w-full bg-slate-900 text-white p-6 rounded-2xl font-black uppercase">Iniciar Agora</button></div>}
-            {fluxo === 1 && <div className="space-y-4"><h2 className="text-2xl font-black text-blue-600">01. Nome e Cargo</h2><input className="w-full p-5 border-2 rounded-xl font-bold" placeholder="Nome" value={dados.nome} onChange={e=>atualizarDados({nome:e.target.value})}/><input className="w-full p-5 border-2 rounded-xl font-bold" placeholder="Cargo desejado" value={dados.cargo} onChange={e=>atualizarDados({cargo:e.target.value})}/></div>}
-            {fluxo === 2 && <div className="space-y-4"><h2 className="text-2xl font-black text-blue-600">02. Contato</h2><input className="w-full p-5 border-2 rounded-xl font-bold" placeholder="Email" value={dados.email} onChange={e=>atualizarDados({email:e.target.value})}/></div>}
-            {fluxo === 3 && <div className="space-y-4"><h2 className="text-2xl font-black text-blue-600">03. Vaga (IA)</h2><textarea className="w-full h-40 p-5 border-2 rounded-xl font-bold" placeholder="Cole aqui a descrição da vaga..." value={dados.vagaTexto} onChange={e=>atualizarDados({vagaTexto:e.target.value})}/></div>}
+      <div className="flex flex-1 max-w-7xl mx-auto w-full p-4 md:p-8 gap-8">
+        
+        {/* ÁREA DE CONTEÚDO */}
+        <main className="flex-1 bg-white rounded-[2.5rem] shadow-sm border border-slate-200 overflow-hidden flex flex-col">
+          
+          <div className="p-8 md:p-12 overflow-y-auto max-h-[75vh]">
             
-            {(fluxo >= 4 && fluxo <= 10) && (
-               <div className="space-y-4">
-                  <h2 className="text-2xl font-black text-blue-600 uppercase">Passo {fluxo}</h2>
-                  {fluxo === 4 && <textarea className="w-full h-40 p-5 border-2 rounded-xl font-bold" placeholder="Fale sobre você" value={dados.resumo} onChange={e=>atualizarDados({resumo:e.target.value})}/>}
-                  {fluxo === 5 && <textarea className="w-full h-40 p-5 border-2 rounded-xl font-bold" placeholder="Experiências anteriores" value={dados.exp} onChange={e=>atualizarDados({exp:e.target.value})}/>}
-                  {fluxo === 6 && <textarea className="w-full h-40 p-5 border-2 rounded-xl font-bold" placeholder="Formação acadêmica" value={dados.estudos} onChange={e=>atualizarDados({estudos:e.target.value})}/>}
-                  {fluxo >= 7 && <div className="p-10 bg-slate-100 rounded-xl text-center font-bold text-slate-400 uppercase text-xs">Informações adicionais registradas</div>}
-               </div>
-            )}
-
-            {/* PREVIEW (FLUXO 11) */}
-            {fluxo === 11 && (
-              <div className="space-y-8 animate-in zoom-in pb-20">
-                <div className="bg-white p-10 shadow-2xl rounded-sm min-h-[600px] border-t-8 border-blue-600">
-                   <h2 className="text-4xl font-black uppercase leading-tight">{dados.nome || 'Seu Nome'}</h2>
-                   <p className="text-xl text-blue-600 font-bold uppercase mb-8">{dados.cargo || 'Cargo'}</p>
-                   <div className="space-y-6 text-sm text-slate-700">
-                      <div><p className="font-black text-slate-900 uppercase underline mb-1">Resumo</p><p>{dados.resumo}</p></div>
-                      <div><p className="font-black text-slate-900 uppercase underline mb-1">Experiência</p><p>{dados.exp}</p></div>
-                   </div>
+            {/* DASHBOARD MODERNA */}
+            {fluxo === 12 && (
+              <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                <div className="max-w-md">
+                  <h2 className="text-4xl font-black text-slate-900 leading-none">Olá, {user?.firstName}! <br/><span className="text-blue-600">Pronto para o próximo nível?</span></h2>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <button onClick={otimizarComIA} disabled={gerandoIA} className="py-4 bg-indigo-600 text-white rounded-xl font-black uppercase flex items-center justify-center gap-2">
-                     <Sparkles size={18}/> {gerandoIA ? "IA Analisando..." : "Otimizar com IA"}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <button onClick={() => setFluxo(0)} className="group bg-slate-900 hover:bg-blue-600 p-8 rounded-[2rem] text-left transition-all duration-500 shadow-2xl shadow-slate-200">
+                    <Plus size={40} className="text-blue-400 group-hover:text-white mb-6 transition-colors" />
+                    <div className="font-bold text-white text-2xl">Criar Novo</div>
+                    <p className="text-slate-400 group-hover:text-blue-100 text-sm mt-2">Inicie um currículo do zero com auxílio da nossa inteligência.</p>
                   </button>
-                  <button onClick={() => setFluxo(13)} className="py-4 bg-green-600 text-white rounded-xl font-black uppercase flex items-center justify-center gap-2">
-                     Download PDF <Download size={18}/>
+                  <button onClick={() => setFluxo(11)} className="group bg-white border-2 border-slate-100 hover:border-blue-400 p-8 rounded-[2rem] text-left transition-all duration-500">
+                    <FileText size={40} className="text-slate-300 group-hover:text-blue-500 mb-6 transition-colors" />
+                    <div className="font-bold text-slate-800 text-2xl">Ver Rascunho</div>
+                    <p className="text-slate-400 text-sm mt-2">Continue editando seu último projeto salvo automaticamente.</p>
                   </button>
                 </div>
               </div>
             )}
 
-            {/* PAGAMENTO (FLUXO 13) */}
-            {fluxo === 13 && (
-              <div className="text-center animate-in zoom-in py-10">
-                <div className="w-20 h-20 bg-green-500 text-white rounded-full flex items-center justify-center mx-auto mb-6"><Lock size={32}/></div>
-                <h1 className="text-3xl font-black uppercase mb-2">Liberação Imediata</h1>
-                <p className="text-xl font-bold text-slate-600 mb-8">R$ 5,90 via PIX</p>
-                <button 
-                  onClick={() => window.location.href = 'https://lastlink.com/p/C462F9E2A/checkout-payment/'}
-                  className="w-full max-w-xs py-5 bg-slate-900 text-white rounded-full font-black uppercase text-lg shadow-2xl"
-                >
-                  Pagar e Baixar
-                </button>
-                <button onClick={() => setFluxo(11)} className="block w-full mt-6 text-slate-400 font-bold uppercase text-[10px]">Voltar e Editar</button>
+            {/* FORMULÁRIO ESTILIZADO */}
+            {fluxo >= 0 && fluxo <= 10 && (
+              <div className="max-w-xl mx-auto space-y-8 animate-in fade-in duration-500">
+                <div className="inline-block px-4 py-1 bg-blue-50 text-blue-600 rounded-full text-[10px] font-black uppercase tracking-widest">
+                  Etapa {fluxo + 1} de 11
+                </div>
+                
+                {fluxo === 1 && (
+                  <div className="space-y-6">
+                    <h3 className="text-3xl font-black text-slate-900">Quem é você?</h3>
+                    <div className="space-y-4">
+                      <input className="w-full p-5 bg-slate-50 border-none rounded-2xl font-medium focus:ring-2 ring-blue-500 transition-all outline-none" placeholder="Nome Completo" value={dados.nome} onChange={e=>atualizarDados({nome:e.target.value})}/>
+                      <input className="w-full p-5 bg-slate-50 border-none rounded-2xl font-medium focus:ring-2 ring-blue-500 transition-all outline-none" placeholder="Cargo Desejado" value={dados.cargo} onChange={e=>atualizarDados({cargo:e.target.value})}/>
+                    </div>
+                  </div>
+                )}
+                
+                {/* PREVIEW FINAL ESTILO "FOLHA DE PAPEL" */}
+                {fluxo === 11 && (
+                  <div className="space-y-8 animate-in zoom-in-95 duration-500">
+                    <div className="bg-white border border-slate-200 shadow-2xl rounded-sm p-12 min-h-[700px] relative overflow-hidden">
+                       <div className="absolute top-0 left-0 w-2 h-full bg-blue-600"></div>
+                       <h2 className="text-5xl font-black text-slate-900 tracking-tighter uppercase">{dados.nome || 'Seu Nome'}</h2>
+                       <p className="text-xl text-blue-600 font-bold mt-2 uppercase tracking-widest">{dados.cargo || 'Cargo'}</p>
+                       
+                       <div className="mt-12 space-y-8">
+                          <section>
+                            <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-4 flex items-center gap-2">
+                              <Sparkles size={14} className="text-blue-500"/> Resumo Profissional Otimizado
+                            </h4>
+                            <p className="text-slate-700 leading-relaxed font-medium">{dados.resumo || 'Aguardando otimização da IA...'}</p>
+                          </section>
+                          {/* Adicione outras seções aqui */}
+                       </div>
+                    </div>
+                    
+                    <div className="flex flex-col md:flex-row gap-4">
+                      <button onClick={otimizarComIA} disabled={gerandoIA} className="flex-1 py-5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-black uppercase tracking-widest shadow-xl shadow-indigo-100 transition-all flex items-center justify-center gap-3">
+                        {gerandoIA ? "Reescrevendo seu futuro..." : "Turbinar com Inteligência Artificial"} <Sparkles size={20}/>
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
-
           </div>
+
+          {/* BARRA DE NAVEGAÇÃO INFERIOR */}
+          {fluxo <= 10 && (
+            <div className="p-8 bg-slate-50 border-t border-slate-100 flex justify-between items-center">
+               <button onClick={() => setFluxo(prev => Math.max(0, prev - 1))} className="text-slate-400 font-bold uppercase text-xs hover:text-slate-900 transition-colors">Anterior</button>
+               <button onClick={() => setFluxo(prev => prev + 1)} className="px-10 py-4 bg-slate-900 text-white rounded-xl font-black uppercase text-xs tracking-widest hover:scale-105 transition-all shadow-lg shadow-slate-200">Próximo Passo</button>
+            </div>
+          )}
         </main>
       </div>
-
-      {/* FOOTER NAVEGAÇÃO */}
-      {fluxo <= 10 && (
-        <footer className="w-full bg-white border-t p-6 flex justify-center fixed bottom-0 z-50">
-          <button 
-            onClick={irParaProximaEtapa} 
-            className="w-full max-w-md py-5 bg-blue-600 text-white rounded-2xl font-black uppercase tracking-widest hover:bg-blue-700 transition-all shadow-xl flex items-center justify-center gap-2"
-          >
-            {fluxo === 10 ? "Ver Currículo Final" : "Continuar"} <ChevronRight/>
-          </button>
-        </footer>
-      )}
     </div>
   );
 }

@@ -1,28 +1,47 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { NextResponse } from "next/server";
+import { NextResponse } from "next/next-server";
 
 export async function POST(req: Request) {
   try {
     const { dados } = await req.json();
-    const apiKey = process.env.GEMINI_API_KEY;
-
-    if (!apiKey) {
-      return NextResponse.json({ error: "Falta a chave API na Vercel" }, { status: 500 });
-    }
-
-    const genAI = new GoogleGenerativeAI(apiKey);
+    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-    const prompt = `Melhore o currículo de ${dados.nome || 'usuário'}. 
-    Vaga: ${dados.vagaTexto}. 
-    Retorne apenas JSON: {"resumo": "...", "exp": "...", "skills": "..."}`;
+    const prompt = `
+      Você é um especialista em RH e recrutamento. Seu objetivo é MELHORAR o currículo abaixo sem apagar informações importantes.
+      
+      DADOS ATUAIS:
+      Nome: ${dados.nome}
+      Cargo: ${dados.cargo}
+      Resumo: ${dados.resumo}
+      Experiência: ${dados.exp}
+      Skills: ${dados.skills}
+      
+      VAGA ALVO: ${dados.vagaTexto}
+      
+      INSTRUÇÕES CRUIAIS:
+      1. NÃO apague as experiências, apenas as reescreva para ficarem mais profissionais.
+      2. Mantenha os dados de contato originais.
+      3. Use palavras-chave da VAGA ALVO no Resumo e nas Skills.
+      4. O tom deve ser corporativo e persuasivo.
+      
+      Responda APENAS em formato JSON como no exemplo:
+      {
+        "resumo": "Novo resumo aqui...",
+        "exp": "Novas experiências aqui...",
+        "skills": "Novas skills aqui..."
+      }
+    `;
 
     const result = await model.generateContent(prompt);
-    const text = result.response.text().replace(/```json/g, "").replace(/```/g, "").trim();
+    const response = await result.response;
+    const text = response.text();
     
-    return NextResponse.json(JSON.parse(text));
+    // Limpa o texto caso o Gemini mande blocos de código ```json
+    const cleanedJson = text.replace(/```json|```/g, "").trim();
+    return NextResponse.json(JSON.parse(cleanedJson));
+
   } catch (error) {
-    console.error("Erro IA:", error);
-    return NextResponse.json({ error: "Erro ao processar" }, { status: 500 });
+    return NextResponse.json({ error: "Erro na IA" }, { status: 500 });
   }
 }

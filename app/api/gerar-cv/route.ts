@@ -1,35 +1,40 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { NextResponse } from "next/next-server";
+import { NextResponse } from "next/server"; // Corrigido aqui
 
 export async function POST(req: Request) {
   try {
     const { dados } = await req.json();
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
+    
+    if (!process.env.GEMINI_API_KEY) {
+      return NextResponse.json({ error: "Chave API não configurada na Vercel" }, { status: 500 });
+    }
+
+    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     const prompt = `
-      Você é um especialista em RH e recrutamento. Seu objetivo é MELHORAR o currículo abaixo sem apagar informações importantes.
+      Você é um especialista em RH. Melhore o currículo abaixo para a vaga informada.
       
-      DADOS ATUAIS:
+      DADOS DO USUÁRIO:
       Nome: ${dados.nome}
-      Cargo: ${dados.cargo}
-      Resumo: ${dados.resumo}
+      Cargo Atual/Pretendido: ${dados.cargo}
+      Resumo Atual: ${dados.resumo}
       Experiência: ${dados.exp}
       Skills: ${dados.skills}
       
       VAGA ALVO: ${dados.vagaTexto}
       
-      INSTRUÇÕES CRUIAIS:
-      1. NÃO apague as experiências, apenas as reescreva para ficarem mais profissionais.
-      2. Mantenha os dados de contato originais.
-      3. Use palavras-chave da VAGA ALVO no Resumo e nas Skills.
-      4. O tom deve ser corporativo e persuasivo.
+      REGRAS:
+      1. NÃO apague as experiências, apenas torne-as mais profissionais e impactantes.
+      2. Use palavras-chave da vaga alvo.
+      3. Se o resumo estiver vazio, crie um excelente com base nas experiências.
+      4. Mantenha os dados pessoais intactos.
       
-      Responda APENAS em formato JSON como no exemplo:
+      Responda estritamente em JSON:
       {
-        "resumo": "Novo resumo aqui...",
-        "exp": "Novas experiências aqui...",
-        "skills": "Novas skills aqui..."
+        "resumo": "texto",
+        "exp": "texto",
+        "skills": "texto"
       }
     `;
 
@@ -37,11 +42,12 @@ export async function POST(req: Request) {
     const response = await result.response;
     const text = response.text();
     
-    // Limpa o texto caso o Gemini mande blocos de código ```json
+    // Limpeza de segurança para garantir que o JSON seja lido corretamente
     const cleanedJson = text.replace(/```json|```/g, "").trim();
     return NextResponse.json(JSON.parse(cleanedJson));
 
   } catch (error) {
-    return NextResponse.json({ error: "Erro na IA" }, { status: 500 });
+    console.error("Erro na rota da IA:", error);
+    return NextResponse.json({ error: "Falha ao processar IA" }, { status: 500 });
   }
 }

@@ -1,5 +1,4 @@
 import { ClerkProvider, SignInButton, SignedIn, SignedOut } from '@clerk/nextjs'
-import { Analytics } from '@vercel/analytics/next'
 import './globals.css'
 
 export const metadata = {
@@ -35,7 +34,6 @@ export default function RootLayout({
                     />
                   </svg>
                 </div>
-
                 {/* Título */}
                 <div className="space-y-3">
                   <h1 className="text-4xl md:text-5xl font-black text-white tracking-tight">
@@ -45,7 +43,6 @@ export default function RootLayout({
                     Crie currículos que <span className="text-yellow-300 font-bold">geram entrevistas</span>
                   </p>
                 </div>
-
                 {/* Features */}
                 <div className="grid grid-cols-1 gap-3 text-left bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
                   {[
@@ -60,24 +57,20 @@ export default function RootLayout({
                     </div>
                   ))}
                 </div>
-
                 {/* Botão de Login */}
                 <SignInButton mode="modal">
                   <button className="w-full py-4 px-6 bg-white hover:bg-blue-50 text-slate-900 rounded-xl font-bold text-lg shadow-2xl hover:shadow-blue-500/50 transition-all duration-300 hover:scale-105 active:scale-95">
                     Começar Gratuitamente →
                   </button>
                 </SignInButton>
-
                 <p className="text-xs text-blue-200/60">
                   Sem cartão de crédito • Seguro e confiável
                 </p>
               </div>
             </div>
           </SignedOut>
-
           <SignedIn>
             {children}
-            <Analytics />
           </SignedIn>
         </body>
       </html>

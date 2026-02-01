@@ -2,30 +2,18 @@
 
 import { useState, useEffect } from 'react'
 import { 
-  ArrowLeft, Send, AlertTriangle, CheckCircle2, Sparkles, Target, 
-  RefreshCw, TrendingUp, Briefcase, User, GraduationCap, Lightbulb, 
-  Award, Loader2, Download, Eye, FileText, Lock, Rocket
+  ArrowLeft, CheckCircle2, Target, RefreshCw, TrendingUp, 
+  FileText, Lock, Rocket, Loader2
 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import { cn } from '@/lib/utils'
 
-export default function GeradorCVProfissional() {
+export default function GeradorCV() {
   const [currentStep, setCurrentStep] = useState(1)
   const [isProcessing, setIsProcessing] = useState(false)
   const [processingStep, setProcessingStep] = useState(0)
   
-  // Estados de Dados
-  const [selectedGoal, setSelectedGoal] = useState('')
-  const [personalData, setPersonalData] = useState({
-    name: '', email: '', phone: '', location: '', summary: ''
-  })
+  const [personalData, setPersonalData] = useState({ name: '', email: '', phone: '', location: '' })
   const [jobDescription, setJobDescription] = useState('')
-  const [selectedFocus, setSelectedFocus] = useState('')
 
-  // Simulação de Processamento
   useEffect(() => {
     if (currentStep === 5 && !isProcessing) {
       setIsProcessing(true)
@@ -37,7 +25,7 @@ export default function GeradorCVProfissional() {
           clearInterval(interval)
           setTimeout(() => {
             setIsProcessing(false)
-            setCurrentStep(6) // Vai para o Checkout/Resultado
+            setCurrentStep(6)
           }, 1000)
         }
       }, 1000)
@@ -48,51 +36,50 @@ export default function GeradorCVProfissional() {
   const back = () => setCurrentStep(prev => prev - 1)
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] pb-20">
-      {/* Navbar Minimalista */}
-      <nav className="bg-white border-b sticky top-0 z-50 px-6 py-4">
-        <div className="max-w-5xl mx-auto flex justify-between items-center">
+    <div className="min-h-screen bg-[#F8FAFC] font-sans text-slate-900">
+      {/* HEADER */}
+      <nav className="bg-white border-b px-6 py-4 sticky top-0 z-50">
+        <div className="max-w-4xl mx-auto flex justify-between items-center">
           <div className="flex items-center gap-2">
-            <div className="bg-blue-600 p-1.5 rounded-lg">
-              <FileText className="text-white h-5 w-5" />
+            <div className="bg-blue-600 p-2 rounded-lg text-white">
+              <FileText size={20} />
             </div>
             <span className="font-black text-xl tracking-tighter uppercase italic">CV<span className="text-blue-600">AI</span></span>
           </div>
-          {currentStep < 5 && (
-            <div className="flex gap-1">
-              {[1, 2, 3, 4].map(s => (
-                <div key={s} className={`h-1.5 w-8 rounded-full transition-all ${currentStep >= s ? 'bg-blue-600' : 'bg-slate-200'}`} />
-              ))}
-            </div>
-          )}
+          <div className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+            Passo {currentStep} de 6
+          </div>
         </div>
       </nav>
 
-      <main className="max-w-3xl mx-auto px-6 pt-12">
+      <main className="max-w-2xl mx-auto px-6 pt-12 pb-24">
         
         {/* STEP 1: OBJETIVO */}
         {currentStep === 1 && (
-          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-6 duration-500">
-            <div className="text-center space-y-4">
-              <h1 className="text-4xl font-black tracking-tight text-slate-900">Qual o seu objetivo hoje?</h1>
-              <p className="text-slate-500 font-medium text-lg">A IA ajustará o tom de voz do currículo para sua meta.</p>
+          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="text-center space-y-2">
+              <h1 className="text-4xl font-black tracking-tight italic uppercase">Qual seu <span className="text-blue-600">objetivo</span>?</h1>
+              <p className="text-slate-500 font-bold">A IA vai adaptar seu currículo para a meta escolhida.</p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-3">
               {[
-                { id: 'job', title: 'Novo Emprego', icon: Target, desc: 'Foco em passar em filtros ATS' },
-                { id: 'change', title: 'Mudar Carreira', icon: RefreshCw, desc: 'Destaque habilidades transferíveis' },
-                { id: 'promo', title: 'Promoção', icon: TrendingUp, desc: 'Foco em resultados e liderança' },
-                { id: 'first', title: 'Primeiro Job', icon: Rocket, desc: 'Destaque potencial e estudos' }
+                { id: 'job', title: 'Conseguir novo emprego', icon: Target, desc: 'Foco total em passar nos robôs ATS' },
+                { id: 'change', title: 'Mudar de carreira', icon: RefreshCw, desc: 'Destaque para habilidades que você já tem' },
+                { id: 'first', title: 'Primeiro emprego', icon: Rocket, desc: 'Ideal para quem não tem experiência' }
               ].map(item => (
-                <Card 
+                <button 
                   key={item.id}
-                  onClick={() => { setSelectedGoal(item.id); next(); }}
-                  className={cn("p-6 cursor-pointer border-2 transition-all hover:border-blue-600 group", selectedGoal === item.id ? "border-blue-600 bg-blue-50" : "border-slate-100")}
+                  onClick={() => { next() }}
+                  className="flex items-center gap-4 p-6 bg-white border-2 border-slate-100 rounded-3xl hover:border-blue-600 transition-all text-left group"
                 >
-                  <item.icon className="mb-4 h-8 w-8 text-blue-600 group-hover:scale-110 transition-transform" />
-                  <h3 className="font-bold text-slate-900">{item.title}</h3>
-                  <p className="text-sm text-slate-500">{item.desc}</p>
-                </Card>
+                  <div className="bg-blue-50 p-3 rounded-2xl group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                    <item.icon size={24} />
+                  </div>
+                  <div>
+                    <h3 className="font-black uppercase italic text-sm">{item.title}</h3>
+                    <p className="text-xs text-slate-400 font-bold">{item.desc}</p>
+                  </div>
+                </button>
               ))}
             </div>
           </div>
@@ -100,77 +87,67 @@ export default function GeradorCVProfissional() {
 
         {/* STEP 2: DADOS PESSOAIS */}
         {currentStep === 2 && (
-          <div className="space-y-8 animate-in fade-in slide-in-from-right-6 duration-500">
-            <div className="text-center">
-              <h2 className="text-3xl font-black text-slate-900 tracking-tight">Quem é você?</h2>
-            </div>
-            <div className="space-y-4 bg-white p-8 rounded-[2rem] shadow-sm border border-slate-100">
-              <Input placeholder="Nome Completo" value={personalData.name} onChange={e => setPersonalData({...personalData, name: e.target.value})} className="h-14 rounded-xl border-slate-200" />
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Input placeholder="WhatsApp" value={personalData.phone} onChange={e => setPersonalData({...personalData, phone: e.target.value})} className="h-14 rounded-xl border-slate-200" />
-                <Input placeholder="E-mail" value={personalData.email} onChange={e => setPersonalData({...personalData, email: e.target.value})} className="h-14 rounded-xl border-slate-200" />
-              </div>
-              <Input placeholder="Cidade - UF" value={personalData.location} onChange={e => setPersonalData({...personalData, location: e.target.value})} className="h-14 rounded-xl border-slate-200" />
-              <Button onClick={next} disabled={!personalData.name} className="w-full h-14 rounded-xl bg-blue-600 hover:bg-blue-700 text-lg font-bold">Continuar</Button>
-            </div>
-          </div>
-        )}
-
-        {/* STEP 3: VAGA DESEJADA */}
-        {currentStep === 3 && (
-          <div className="space-y-8 animate-in fade-in slide-in-from-right-6 duration-500">
-            <div className="text-center space-y-2">
-              <h2 className="text-3xl font-black text-slate-900 tracking-tight">Cole a descrição da vaga</h2>
-              <p className="text-slate-500 font-medium italic">A IA vai ler os requisitos e "hackear" as palavras-chave.</p>
-            </div>
-            <div className="space-y-4">
-              <Textarea 
-                placeholder="Cole aqui o texto da vaga ou cargo desejado..." 
-                className="min-h-[250px] rounded-[2rem] border-slate-200 p-8 shadow-sm focus:ring-blue-500"
-                value={jobDescription}
-                onChange={e => setJobDescription(e.target.value)}
+          <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
+            <h2 className="text-3xl font-black uppercase italic tracking-tighter text-center">Informações <span className="text-blue-600">Pessoais</span></h2>
+            <div className="bg-white p-8 rounded-[2.5rem] shadow-xl shadow-slate-200/50 space-y-4 border border-slate-100">
+              <input 
+                type="text" placeholder="Nome Completo" 
+                className="w-full p-5 bg-slate-50 rounded-2xl border-2 border-transparent focus:border-blue-600 outline-none font-bold"
+                value={personalData.name} onChange={e => setPersonalData({...personalData, name: e.target.value})}
               />
-              <Button onClick={next} className="w-full h-14 rounded-xl bg-blue-600 hover:bg-blue-700 text-lg font-bold">Analisar Vaga com IA</Button>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <input type="text" placeholder="WhatsApp" className="w-full p-5 bg-slate-50 rounded-2xl border-2 border-transparent focus:border-blue-600 outline-none font-bold" />
+                <input type="email" placeholder="E-mail" className="w-full p-5 bg-slate-50 rounded-2xl border-2 border-transparent focus:border-blue-600 outline-none font-bold" />
+              </div>
+              <button onClick={next} className="w-full p-5 bg-blue-600 text-white rounded-2xl font-black uppercase tracking-widest hover:bg-blue-700 transition-all shadow-lg shadow-blue-200">
+                Próximo Passo
+              </button>
             </div>
           </div>
         )}
 
-        {/* STEP 4: FOCO ESTRATÉGICO */}
+        {/* STEP 3: DESCRIÇÃO DA VAGA */}
+        {currentStep === 3 && (
+          <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
+            <h2 className="text-3xl font-black uppercase italic tracking-tighter text-center">Dados da <span className="text-blue-600">Vaga</span></h2>
+            <textarea 
+              placeholder="Cole aqui a descrição da vaga ou o cargo que você deseja..."
+              className="w-full h-64 p-8 bg-white rounded-[2.5rem] border-2 border-slate-100 focus:border-blue-600 outline-none font-medium shadow-inner resize-none"
+              value={jobDescription} onChange={e => setJobDescription(e.target.value)}
+            />
+            <button onClick={next} className="w-full p-6 bg-blue-600 text-white rounded-2xl font-black uppercase tracking-widest hover:bg-blue-700 transition-all shadow-lg shadow-blue-200">
+              Analisar com IA
+            </button>
+          </div>
+        )}
+
+        {/* STEP 4: FOCO */}
         {currentStep === 4 && (
-          <div className="space-y-8 animate-in fade-in slide-in-from-right-6 duration-500">
-            <div className="text-center">
-              <h2 className="text-3xl font-black text-slate-900 tracking-tight">Quase lá! Qual o foco?</h2>
-            </div>
-            <div className="grid grid-cols-1 gap-3">
-              {[
-                { id: 'exp', title: 'Minhas Experiências', desc: 'Focar no que eu já fiz' },
-                { id: 'skill', title: 'Minhas Habilidades', desc: 'Focar no que eu sei fazer' },
-                { id: 'result', title: 'Meus Resultados', desc: 'Focar em números e conquistas' }
-              ].map(f => (
-                <div key={f.id} onClick={() => { setSelectedFocus(f.id); next(); }} className="flex items-center justify-between p-6 bg-white border border-slate-200 rounded-2xl cursor-pointer hover:border-blue-600 transition-all">
-                  <div>
-                    <h4 className="font-bold text-slate-900">{f.title}</h4>
-                    <p className="text-sm text-slate-500">{f.desc}</p>
-                  </div>
-                  <div className={`w-6 h-6 rounded-full border-2 ${selectedFocus === f.id ? 'bg-blue-600 border-blue-600' : 'border-slate-200'}`} />
-                </div>
+          <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
+            <h2 className="text-3xl font-black uppercase italic tracking-tighter text-center">Foco <span className="text-blue-600">Estratégico</span></h2>
+            <div className="grid grid-cols-1 gap-4">
+              {['Experiência Profissional', 'Habilidades Técnicas', 'Conquistas e Resultados'].map(f => (
+                <button key={f} onClick={next} className="w-full p-6 bg-white border-2 border-slate-100 rounded-3xl font-black uppercase italic text-left hover:border-blue-600 transition-all flex justify-between items-center">
+                  {f}
+                  <div className="w-4 h-4 rounded-full border-2 border-slate-200" />
+                </button>
               ))}
             </div>
           </div>
         )}
 
-        {/* STEP 5: PROCESSING IA */}
+        {/* STEP 5: LOADING IA */}
         {currentStep === 5 && (
-          <div className="flex flex-col items-center justify-center py-20 space-y-8 text-center animate-in fade-in duration-1000">
+          <div className="flex flex-col items-center justify-center py-20 text-center space-y-8 animate-in fade-in duration-700">
             <div className="relative">
-              <div className="absolute inset-0 bg-blue-500/20 blur-3xl animate-pulse rounded-full" />
-              <Loader2 className="h-20 w-20 text-blue-600 animate-spin relative z-10" />
+              <div className="absolute inset-0 bg-blue-400 blur-3xl opacity-20 animate-pulse" />
+              <Loader2 className="animate-spin text-blue-600 relative" size={64} />
             </div>
-            <div className="space-y-2">
-              <h2 className="text-2xl font-black uppercase italic tracking-tighter">Gerando seu currículo de elite...</h2>
-              <div className="space-y-2 max-w-[300px] mx-auto">
-                {['Analisando palavras-chave...', 'Otimizando para robôs ATS...', 'Estruturando layout...', 'Finalizando Design...'].map((t, i) => (
-                  <div key={i} className={`text-sm font-bold flex items-center gap-2 transition-opacity duration-500 ${processingStep >= i ? 'opacity-100 text-blue-600' : 'opacity-20'}`}>
+            <div className="space-y-4">
+              <h2 className="text-2xl font-black uppercase italic tracking-tighter italic">Nossa IA está criando sua <br/> melhor versão...</h2>
+              <div className="space-y-2 inline-block text-left">
+                {['Mapeando Vaga...', 'Extraindo Keywords...', 'Formatando Layout...', 'Finalizando Design...'].map((t, i) => (
+                  <div key={i} className={`flex items-center gap-2 font-bold text-xs uppercase tracking-widest transition-opacity duration-500 ${processingStep >= i ? 'text-blue-600' : 'opacity-20 text-slate-400'}`}>
                     <CheckCircle2 size={14} /> {t}
                   </div>
                 ))}
@@ -179,72 +156,72 @@ export default function GeradorCVProfissional() {
           </div>
         )}
 
-        {/* STEP 6: RESULTADO + CHECKOUT */}
+        {/* STEP 6: CHECKOUT */}
         {currentStep === 6 && (
           <div className="space-y-10 animate-in zoom-in duration-500">
-            <div className="bg-green-50 border border-green-100 p-6 rounded-[2rem] flex items-center gap-4 shadow-sm">
-              <div className="bg-green-500 p-3 rounded-full text-white">
-                <CheckCircle2 size={32} />
-              </div>
+            <div className="bg-emerald-500 p-6 rounded-[2.5rem] text-white flex items-center gap-4 shadow-xl shadow-emerald-100">
+              <CheckCircle2 size={40} />
               <div>
-                <h2 className="text-2xl font-black text-green-900 tracking-tight">Currículo Pronto!</h2>
-                <p className="text-green-700 font-bold text-sm">Sua pontuação ATS estimada: <span className="text-xl">98/100</span></p>
+                <h2 className="font-black uppercase italic text-xl tracking-tighter">Currículo Gerado com Sucesso!</h2>
+                <p className="text-xs font-bold opacity-90 uppercase tracking-widest">Score ATS Atual: 98% (Excelente)</p>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {/* Preview Fake */}
-              <div className="bg-white border-4 border-slate-900 rounded-[2rem] p-6 shadow-2xl scale-95 opacity-80 pointer-events-none relative overflow-hidden h-[400px]">
-                <div className="space-y-4">
-                  <div className="h-8 bg-slate-100 w-2/3 rounded" />
-                  <div className="h-4 bg-slate-50 w-full rounded" />
-                  <div className="h-20 bg-slate-50 w-full rounded" />
-                  <div className="grid grid-cols-3 gap-2">
-                    <div className="h-4 bg-slate-100 rounded" />
-                    <div className="h-4 bg-slate-100 rounded" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+              {/* Fake Preview */}
+              <div className="relative group">
+                <div className="absolute -inset-2 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-[2.5rem] blur opacity-20" />
+                <div className="relative bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-2xl h-[400px] overflow-hidden opacity-40 grayscale pointer-events-none">
+                  <div className="space-y-4">
+                    <div className="h-6 bg-slate-100 w-3/4 rounded" />
+                    <div className="h-2 bg-slate-50 w-full rounded" />
+                    <div className="h-20 bg-slate-50 w-full rounded" />
+                    <div className="h-2 bg-slate-50 w-full rounded" />
+                    <div className="h-2 bg-slate-50 w-full rounded" />
                   </div>
-                </div>
-                <div className="absolute inset-0 bg-gradient-to-t from-white via-transparent flex items-center justify-center">
-                   <Lock className="text-slate-400" size={48} />
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <Lock size={48} className="text-slate-300" />
+                  </div>
                 </div>
               </div>
 
-              {/* Checkout Card */}
-              <div className="space-y-6 flex flex-col justify-center">
+              {/* Checkout */}
+              <div className="space-y-6">
                 <div className="space-y-2">
-                  <h3 className="text-3xl font-black text-slate-900 tracking-tighter uppercase italic">Liberar meu <span className="text-blue-600">acesso</span></h3>
-                  <p className="text-slate-500 font-bold">Baixe agora em PDF e Word para começar a ser chamado para entrevistas.</p>
+                  <h3 className="text-3xl font-black uppercase italic tracking-tighter leading-none">Liberar seu <br/> <span className="text-blue-600 text-4xl">Currículo</span></h3>
+                  <p className="text-slate-400 font-bold text-sm">Acesso vitalício, download em PDF e Word + Bônus exclusivo.</p>
                 </div>
-                
-                <div className="bg-blue-50 p-6 rounded-3xl border border-blue-100">
-                  <div className="flex justify-between items-center mb-4">
-                    <span className="font-bold text-slate-600 uppercase text-xs tracking-widest">Plano Único</span>
-                    <span className="bg-blue-600 text-white text-[10px] font-black px-2 py-1 rounded">OFERTA ATIVA</span>
-                  </div>
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-4xl font-black text-slate-900">R$ 27,90</span>
-                    <span className="text-slate-400 line-through font-bold text-sm">R$ 97,00</span>
+
+                <div className="bg-slate-900 p-6 rounded-[2rem] text-white relative overflow-hidden group">
+                  <div className="relative z-10 flex justify-between items-end">
+                    <div>
+                      <p className="text-[10px] font-black uppercase text-blue-400 tracking-widest mb-1">Preço Especial</p>
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-4xl font-black">R$ 27,90</span>
+                        <span className="text-slate-500 line-through text-xs font-bold font-sans">R$ 97,00</span>
+                      </div>
+                    </div>
+                    <button className="bg-blue-600 p-4 rounded-2xl group-hover:scale-110 transition-transform shadow-lg shadow-blue-500/20">
+                      <ArrowLeft className="rotate-180" />
+                    </button>
                   </div>
                 </div>
 
-                <Button className="w-full h-20 rounded-[2rem] bg-green-500 hover:bg-green-600 shadow-xl shadow-green-100 text-xl font-black uppercase tracking-tight flex flex-col leading-none">
-                  <span>Baixar Currículo Agora</span>
-                  <span className="text-[10px] opacity-80 mt-1 font-bold">Acesso Vitalício + Bônus</span>
-                </Button>
-                
-                <p className="text-center text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center justify-center gap-2">
-                  <Lock size={12} /> Pagamento 100% Seguro
+                <button className="w-full bg-emerald-500 py-6 rounded-[2rem] text-white font-black uppercase italic tracking-tighter text-xl shadow-xl shadow-emerald-200 hover:bg-emerald-600 transition-all active:scale-95">
+                  Baixar Currículo Agora
+                </button>
+                <p className="text-center text-[10px] text-slate-400 font-black uppercase tracking-[0.2em] flex items-center justify-center gap-2">
+                   <Lock size={12} /> Pagamento 100% Seguro
                 </p>
               </div>
             </div>
           </div>
         )}
-
       </main>
 
-      {/* Botão de Voltar Flutuante */}
+      {/* BACK BUTTON */}
       {currentStep > 1 && currentStep < 5 && (
-        <button onClick={back} className="fixed bottom-8 left-8 bg-white border border-slate-200 p-4 rounded-full shadow-lg text-slate-400 hover:text-blue-600 transition-all">
+        <button onClick={back} className="fixed bottom-8 left-8 bg-white p-4 rounded-full shadow-2xl border border-slate-100 text-slate-400 hover:text-blue-600 transition-all">
           <ArrowLeft size={24} />
         </button>
       )}
